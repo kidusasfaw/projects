@@ -1,4 +1,3 @@
-#need to import smtp,datetime,and figure out how to keep this running and sending emails even when not online...this seems only possible on linux
 import smtplib
 from datetime import date as date
 import sqlite3
@@ -10,6 +9,27 @@ class item:
 	def getAttribute(self, attribute):
 		return self.variables.get(attribute,None)
 		
+		
+def send_email(subject,text):
+	sender="kidusasfaw1990@gmail.com"
+	password = "secret"
+	FROM = sender
+	TO = ['kidusasfaw1990@gmail.com']
+	SUBJECT = subject
+	MESSAGE = text
+	note = "From: {}\nTo: {}\nSubject: {}\n\n{}".format(FROM,", ".join(TO),SUBJECT,MESSAGE)
+	try:
+		server = smtplib.SMTP("smtp.gmail.com",587)
+		server.ehlo()
+		server.starttls()
+		server.login(sender,password)
+		server.sendmail(FROM,TO,note)
+		server.close()
+		print 'Email Sent!'
+	except:
+		print 'Email Failed!'
+
+		
 def checker(file):
 	"""Checks from database if something is due
 	Args:
@@ -20,7 +40,9 @@ def checker(file):
 	cursor = db.execute('select * from items')
 	for row in cursor:
 		if date.today().day == row['item_day']: 
-			print 'Item {} with amount {} is due today!'.format(row['item_name'],row['item_amount'])
+			text = "Item {} with amount {} is due today!".format(row['item_name'],row['item_amount'])
+			subject = "You have a payment due!"
+			send_email(subject,text)
 		else:
 			print 'You have no reminders'
 
